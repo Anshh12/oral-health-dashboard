@@ -698,100 +698,180 @@ with tabs[9]:
 with tabs[10]:
     sec("Examiner Performance Overview")
     if col_exam:
-        examiner_list = sorted(df[col_exam].dropna().unique())
-        # Summary table
-        exam_summary_rows = []
-        for ex in examiner_list:
-            ex_df = df[df[col_exam]==ex]
-            row_data = {"Examiner": ex, "Participants": len(ex_df)}
+        all_examiners = sorted(df[col_exam].dropna().unique())
+
+        # ── EXAMINER SELECTOR ──
+        st.markdown('<div style="background:linear-gradient(90deg,#eff6ff,#f0fdf4);padding:16px 20px;border-radius:12px;margin-bottom:16px;border:1px solid #e2e8f0;">',unsafe_allow_html=True)
+        st.markdown("**🔍 Select Examiners to Analyse**")
+        sel_col1, sel_col2 = st.columns([4,1])
+        with sel_col1:
+            selected_examiners = st.multiselect(
+                "Pick examiners (add/remove to compare)",
+                options=all_examiners,
+                default=all_examiners,
+                key="exam_tab_selector"
+            )
+        with sel_col2:
+            st.markdown("<br>",unsafe_allow_html=True)
+            if st.button("Select All", key="exam_sel_all", use_container_width=True):
+                st.session_state["exam_tab_selector"] = list(all_examiners)
+                st.rerun()
+        st.markdown('</div>',unsafe_allow_html=True)
+
+        if not selected_examiners:
+            st.warning("⚠️ Please select at least one examiner to analyse.")
+        else:
+            # Filter data to selected examiners only
+            edf = df[df[col_exam].isin(selected_examiners)]
+            examiner_list = sorted(selected_examiners)
+            is_single = len(examiner_list) == 1
+            mode_label = f"**Analysing: Examiner {examiner_list[0]}**" if is_single else f"**Analysing: {len(examiner_list)} Examiners** ({', '.join([str(e) for e in examiner_list])})"
+            st.info(mode_label)
+
+            # ── SUMMARY TABLE ──
+            exam_summary_rows = []
+            for ex in examiner_list:
+                ex_df = edf[edf[col_exam]==ex]
+                row_data = {"Examiner": ex, "Participants": len(ex_df)}
+                if col_gender:
+                    row_data["Male"] = int((ex_df[col_gender]=="Male").sum())
+                    row_data["Female"] = int((ex_df[col_gender]=="Female").sum())
+                if col_ag:
+                    for ag in sorted(df[col_ag].dropna().unique()):
+                        row_data[ag] = int((ex_df[col_ag]==ag).sum())
+                if has_date:
+                    ex_dates = ex_df["_date"].dropna()
+                    row_data["Days Active"] = int(ex_dates.dt.date.nunique()) if len(ex_dates)>0 else 0
+                    row_data["Avg/Day"] = round(len(ex_df)/max(row_data.get("Days Active",1),1),1)
+                if "_DMFT" in df.columns:
+                    row_data["Mean DMFT"] = round(ex_df["_DMFT"].mean(),2) if len(ex_df)>0 else 0
+                if "_D" in df.columns:
+                    row_data["Caries %"] = round((ex_df["_D"]>0).mean()*100,1) if len(ex_df)>0 else 0
+                if col_tobacco:
+                    row_data["Tobacco %"] = round((ex_df[col_tobacco]=="Yes").mean()*100,1)
+                if col_intervention:
+                    urgent = ex_df[col_intervention].astype(str).str.contains("Immediate|urgent",case=False,na=False).sum()
+                    row_data["Urgent"] = int(urgent)
+                exam_summary_rows.append(row_data)
+            exam_sum = pd.DataFrame(exam_summary_rows)
+            st.dataframe(exam_sum, use_container_width=True, hide_index=True)
+
+            # ── KPIs ──
+            if len(exam_sum)>0:
+                total_pts = int(exam_sum["Participants"].sum())
+                e1,e2,e3,e4 = st.columns(4)
+                with e1: kpi("Selected Examiners",f"{len(examiner_list)}","p")
+                with e2: kpi("Total Participants",f"{total_pts}","")
+                if is_single:
+                    ex_row = exam_sum.iloc[0]
+                    with e3: kpi("Avg/Day",f"{ex_row.get('Avg/Day','N/A')}","g")
+                    with e4: kpi("Mean DMFT",f"{ex_row.get('Mean DMFT','N/A')}","r")
+                else:
+                    top_ex = exam_sum.sort_values("Participants",ascending=False).iloc[0]
+                    with e3: kpi("Most Active",f"{top_ex['Examiner']}","g",f"{int(top_ex['Participants'])} pts")
+                    if "Avg/Day" in exam_sum.columns:
+                        with e4:
+                            best_prod = exam_sum.sort_values("Avg/Day",ascending=False).iloc[0]
+                            kpi("Most Productive",f"{best_prod['Examiner']}","",f"{best_prod['Avg/Day']}/day")
+
+            # ── GENDER DISTRIBUTION ──
             if col_gender:
-                row_data["Male"] = int((ex_df[col_gender]=="Male").sum())
-                row_data["Female"] = int((ex_df[col_gender]=="Female").sum())
+                sec("Gender Distribution per Examiner")
+                st.plotly_chart(grp_bar(edf.dropna(subset=[col_exam,col_gender]),col_exam,col_gender,"Examiner × Gender"),use_container_width=True)
+
+            # ── AGE GROUP DISTRIBUTION ──
             if col_ag:
-                for ag in sorted(df[col_ag].dropna().unique()):
-                    row_data[ag] = int((ex_df[col_ag]==ag).sum())
+                sec("Age Group Distribution per Examiner")
+                st.plotly_chart(grp_bar(edf.dropna(subset=[col_exam,col_ag]),col_exam,col_ag,"Examiner × Age Group"),use_container_width=True)
+
+            # ── DAILY PRODUCTIVITY ──
             if has_date:
-                ex_dates = ex_df["_date"].dropna()
-                row_data["Days Active"] = int(ex_dates.dt.date.nunique()) if len(ex_dates)>0 else 0
-                row_data["Avg/Day"] = round(len(ex_df)/max(row_data.get("Days Active",1),1),1)
-            if "_DMFT" in df.columns:
-                row_data["Mean DMFT"] = round(ex_df["_DMFT"].mean(),2) if len(ex_df)>0 else 0
-            exam_summary_rows.append(row_data)
-        exam_sum = pd.DataFrame(exam_summary_rows)
-        st.dataframe(exam_sum, use_container_width=True, hide_index=True)
+                sec("Daily Productivity")
+                daily_ex = edf.dropna(subset=["_date",col_exam]).groupby([edf["_date"].dt.date,col_exam]).size().reset_index()
+                daily_ex.columns = ["Date","Examiner","Patients"]
+                fig_line = px.line(daily_ex,x="Date",y="Patients",color="Examiner",
+                    title="Daily Patients per Examiner",color_discrete_sequence=C,markers=True)
+                fig_line.update_layout(**LY,height=350,xaxis=dict(showgrid=False),
+                    yaxis=dict(gridcolor="#f1f5f9"),legend=dict(orientation="h",yanchor="bottom",y=1.02))
+                st.plotly_chart(fig_line,use_container_width=True)
 
-        # KPI for top examiner
-        if len(exam_sum)>0:
-            top_ex = exam_sum.sort_values("Participants",ascending=False).iloc[0]
-            e1,e2,e3 = st.columns(3)
-            with e1: kpi("Most Active Examiner",f"{top_ex['Examiner']}","",f"{int(top_ex['Participants'])} participants")
-            with e2:
-                if "Avg/Day" in exam_sum.columns:
-                    best_prod = exam_sum.sort_values("Avg/Day",ascending=False).iloc[0]
-                    kpi("Highest Productivity",f"{best_prod['Examiner']}","g",f"{best_prod['Avg/Day']} avg/day")
-            with e3:
-                kpi("Total Examiners",f"{len(examiner_list)}","p")
+                sec("Productivity Distribution")
+                prod = edf.dropna(subset=["_date",col_exam]).groupby([edf["_date"].dt.date,col_exam]).size().reset_index()
+                prod.columns = ["Date","Examiner","Count"]
+                fig_box = px.box(prod,x="Examiner",y="Count",color="Examiner",
+                    title="Distribution of Daily Patient Count per Examiner",color_discrete_sequence=C)
+                fig_box.update_layout(**LY,height=350,showlegend=False,
+                    xaxis=dict(showgrid=False),yaxis=dict(gridcolor="#f1f5f9",title="Patients/Day"))
+                st.plotly_chart(fig_box,use_container_width=True)
 
-        # Gender distribution per examiner
-        if col_gender:
-            sec("Gender Distribution per Examiner")
-            st.plotly_chart(grp_bar(df.dropna(subset=[col_exam,col_gender]),col_exam,col_gender,"Examiner × Gender"),use_container_width=True)
+            # ── INDIVIDUAL EXAMINER DETAIL CARDS ──
+            sec("📋 Individual Examiner Details")
+            st.caption("Expand any examiner below for a detailed individual breakdown")
+            for ex in examiner_list:
+                ex_df = edf[edf[col_exam]==ex]
+                label = f"👨‍⚕️ Examiner {ex}  —  {len(ex_df)} participants"
+                with st.expander(label, expanded=is_single):
+                    ic1, ic2, ic3, ic4 = st.columns(4)
+                    with ic1: kpi("Participants",f"{len(ex_df)}","")
+                    if col_gender:
+                        with ic2: kpi("Male",f"{int((ex_df[col_gender]=='Male').sum())}","")
+                        with ic3: kpi("Female",f"{int((ex_df[col_gender]=='Female').sum())}","p")
+                    if "_DMFT" in df.columns:
+                        with ic4: kpi("Mean DMFT",f"{ex_df['_DMFT'].mean():.2f}","r")
 
-        # Age group distribution per examiner
-        if col_ag:
-            sec("Age Group Distribution per Examiner")
-            st.plotly_chart(grp_bar(df.dropna(subset=[col_exam,col_ag]),col_exam,col_ag,"Examiner × Age Group"),use_container_width=True)
+                    # Age group breakdown for this examiner
+                    if col_ag:
+                        age_cts = ex_df[col_ag].value_counts().reset_index()
+                        age_cts.columns = ["Age Group","Count"]
+                        st.dataframe(age_cts, use_container_width=True, hide_index=True)
 
-        # Daily productivity
-        if has_date:
-            sec("Daily Productivity")
-            daily_ex = df.dropna(subset=["_date",col_exam]).groupby([df["_date"].dt.date,col_exam]).size().reset_index()
-            daily_ex.columns = ["Date","Examiner","Patients"]
-            fig_line = px.line(daily_ex,x="Date",y="Patients",color="Examiner",
-                title="Daily Patients per Examiner",color_discrete_sequence=C,markers=True)
-            fig_line.update_layout(**LY,height=350,xaxis=dict(showgrid=False),
-                yaxis=dict(gridcolor="#f1f5f9"),legend=dict(orientation="h",yanchor="bottom",y=1.02))
-            st.plotly_chart(fig_line,use_container_width=True)
+                    # Cluster breakdown for this examiner
+                    if col_cluster:
+                        cl_cts = ex_df[col_cluster].value_counts().reset_index()
+                        cl_cts.columns = ["Cluster","Count"]
+                        st.dataframe(cl_cts, use_container_width=True, hide_index=True)
 
-            # Productivity box plot
-            sec("Productivity Distribution")
-            prod = df.dropna(subset=["_date",col_exam]).groupby([df["_date"].dt.date,col_exam]).size().reset_index()
-            prod.columns = ["Date","Examiner","Count"]
-            fig_box = px.box(prod,x="Examiner",y="Count",color="Examiner",
-                title="Distribution of Daily Patient Count per Examiner",color_discrete_sequence=C)
-            fig_box.update_layout(**LY,height=350,showlegend=False,
-                xaxis=dict(showgrid=False),yaxis=dict(gridcolor="#f1f5f9",title="Patients/Day"))
-            st.plotly_chart(fig_box,use_container_width=True)
+                    # Intervention urgency for this examiner
+                    if col_intervention:
+                        urg_cts = ex_df[col_intervention].dropna().value_counts().reset_index()
+                        urg_cts.columns = ["Urgency","Count"]
+                        st.dataframe(urg_cts, use_container_width=True, hide_index=True)
 
-        # Download examiner report
-        sec("📥 Download Examiner Report")
-        report_rows = []
-        for ex in examiner_list:
-            ex_df = df[df[col_exam]==ex]
-            rr = {"Examiner": ex, "Total Participants": len(ex_df)}
-            if col_gender:
-                rr["Male"] = int((ex_df[col_gender]=="Male").sum())
-                rr["Female"] = int((ex_df[col_gender]=="Female").sum())
-            if col_ag:
-                for ag in sorted(df[col_ag].dropna().unique()):
-                    rr[f"Age: {ag}"] = int((ex_df[col_ag]==ag).sum())
-            if has_date:
-                dates = ex_df["_date"].dropna()
-                rr["First Date"] = str(dates.min().date()) if len(dates)>0 else ""
-                rr["Last Date"] = str(dates.max().date()) if len(dates)>0 else ""
-                rr["Days Active"] = int(dates.dt.date.nunique()) if len(dates)>0 else 0
-                rr["Avg Patients/Day"] = round(len(ex_df)/max(rr["Days Active"],1),1)
-            if "_DMFT" in df.columns:
-                rr["Mean DMFT"] = round(ex_df["_DMFT"].mean(),2)
-                rr["Caries Prevalence %"] = round((ex_df["_D"]>0).mean()*100,1) if "_D" in ex_df.columns else ""
-            if col_intervention:
-                urgent = ex_df[col_intervention].astype(str).str.contains("Immediate|urgent",case=False,na=False).sum()
-                rr["Urgent Cases"] = int(urgent)
-            report_rows.append(rr)
-        report_df = pd.DataFrame(report_rows)
-        st.dataframe(report_df, use_container_width=True, hide_index=True)
-        csv_report = report_df.to_csv(index=False).encode("utf-8")
-        st.download_button("📥 Download Examiner Report CSV",csv_report,"examiner_report.csv","text/csv",use_container_width=True)
+                    # Date range
+                    if has_date:
+                        ex_dates = ex_df["_date"].dropna()
+                        if len(ex_dates)>0:
+                            st.caption(f"📅 Active: {ex_dates.min().date()} → {ex_dates.max().date()} | Days: {ex_dates.dt.date.nunique()} | Avg/Day: {round(len(ex_df)/max(ex_dates.dt.date.nunique(),1),1)}")
+
+            # ── DOWNLOAD REPORT ──
+            sec("📥 Download Examiner Report")
+            report_rows = []
+            for ex in examiner_list:
+                ex_df = edf[edf[col_exam]==ex]
+                rr = {"Examiner": ex, "Total Participants": len(ex_df)}
+                if col_gender:
+                    rr["Male"] = int((ex_df[col_gender]=="Male").sum())
+                    rr["Female"] = int((ex_df[col_gender]=="Female").sum())
+                if col_ag:
+                    for ag in sorted(df[col_ag].dropna().unique()):
+                        rr[f"Age: {ag}"] = int((ex_df[col_ag]==ag).sum())
+                if has_date:
+                    dates = ex_df["_date"].dropna()
+                    rr["First Date"] = str(dates.min().date()) if len(dates)>0 else ""
+                    rr["Last Date"] = str(dates.max().date()) if len(dates)>0 else ""
+                    rr["Days Active"] = int(dates.dt.date.nunique()) if len(dates)>0 else 0
+                    rr["Avg Patients/Day"] = round(len(ex_df)/max(rr["Days Active"],1),1)
+                if "_DMFT" in df.columns:
+                    rr["Mean DMFT"] = round(ex_df["_DMFT"].mean(),2)
+                    rr["Caries Prevalence %"] = round((ex_df["_D"]>0).mean()*100,1) if "_D" in ex_df.columns else ""
+                if col_intervention:
+                    urgent = ex_df[col_intervention].astype(str).str.contains("Immediate|urgent",case=False,na=False).sum()
+                    rr["Urgent Cases"] = int(urgent)
+                report_rows.append(rr)
+            report_df = pd.DataFrame(report_rows)
+            st.dataframe(report_df, use_container_width=True, hide_index=True)
+            csv_report = report_df.to_csv(index=False).encode("utf-8")
+            st.download_button("📥 Download Examiner Report CSV",csv_report,"examiner_report.csv","text/csv",use_container_width=True)
     else:
         st.warning("No Examiner column found in the data.")
 

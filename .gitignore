@@ -24,8 +24,8 @@ desktop.ini
 *.xlsx
 *.xls
 
-# Streamlit
-.streamlit/
+# Streamlit secrets (not config)
+.streamlit/secrets.toml
 
 # Logs
 *.log

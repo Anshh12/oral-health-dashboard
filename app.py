@@ -289,24 +289,24 @@ with tabs[0]:
     sec("Demographics Overview")
     c1,c2,c3 = st.columns(3)
     if col_gender:
-        with c1: st.plotly_chart(pie(df[col_gender].dropna(),"Gender Distribution"))
+        with c1: st.plotly_chart(pie(df[col_gender].dropna(),"Gender Distribution"),use_container_width=True)
     if col_ag:
-        with c2: st.plotly_chart(pie(df[col_ag].dropna(),"Age Group Distribution"))
+        with c2: st.plotly_chart(pie(df[col_ag].dropna(),"Age Group Distribution"),use_container_width=True)
     if col_exam:
-        with c3: st.plotly_chart(bar(df[col_exam].dropna(),"Participants per Examiner","h","#8b5cf6"))
+        with c3: st.plotly_chart(bar(df[col_exam].dropna(),"Participants per Examiner","h","#8b5cf6"),use_container_width=True)
     if col_ag and col_gender:
         sec("Gender × Age Group")
-        st.plotly_chart(grp_bar(df.dropna(subset=[col_ag,col_gender]),col_ag,col_gender,"Gender × Age Group Cross-Tabulation"))
+        st.plotly_chart(grp_bar(df.dropna(subset=[col_ag,col_gender]),col_ag,col_gender,"Gender × Age Group Cross-Tabulation"),use_container_width=True)
     if col_cluster:
         sec("Cluster Distribution")
-        st.plotly_chart(bar(df[col_cluster].dropna(),"Participants per Cluster",clr="#06b6d4"))
+        st.plotly_chart(bar(df[col_cluster].dropna(),"Participants per Cluster",clr="#06b6d4"),use_container_width=True)
     if has_date:
         sec("Enrolment Timeline")
         daily=df.groupby(df["_date"].dt.date).size().reset_index();daily.columns=["Date","Count"]
         fig=px.area(daily,x="Date",y="Count",title="Daily Participant Enrolment",color_discrete_sequence=["#3b82f6"])
         fig.update_traces(line_width=2,fill="tozeroy",fillcolor="rgba(59,130,246,.1)")
         fig.update_layout(**LY,height=300,xaxis=dict(showgrid=False),yaxis=dict(gridcolor="#f1f5f9"))
-        st.plotly_chart(fig)
+        st.plotly_chart(fig,use_container_width=True)
 
 # ═══ TAB 1: HOUSEHOLD ═══
 with tabs[1]:
@@ -316,14 +316,14 @@ with tabs[1]:
     else:
         h1,h2 = st.columns(2)
         if col_water:
-            with h1: st.plotly_chart(pie(hh[col_water].dropna(),"Drinking Water Source",340))
+            with h1: st.plotly_chart(pie(hh[col_water].dropna(),"Drinking Water Source",340),use_container_width=True)
         if col_fuel:
-            with h2: st.plotly_chart(pie(hh[col_fuel].dropna(),"Cooking Fuel",340))
+            with h2: st.plotly_chart(pie(hh[col_fuel].dropna(),"Cooking Fuel",340),use_container_width=True)
         h3,h4 = st.columns(2)
         if col_roof:
-            with h3: st.plotly_chart(pie(hh[col_roof].dropna(),"Roof Material",300))
+            with h3: st.plotly_chart(pie(hh[col_roof].dropna(),"Roof Material",300),use_container_width=True)
         if col_toilet:
-            with h4: st.plotly_chart(pie(hh[col_toilet].dropna(),"Toilet Facility",300))
+            with h4: st.plotly_chart(pie(hh[col_toilet].dropna(),"Toilet Facility",300),use_container_width=True)
         if asset_cols:
             sec("Asset Ownership")
             asset_data = []
@@ -334,27 +334,27 @@ with tabs[1]:
             fig=px.bar(adf,x="Ownership %",y="Asset",orientation="h",title="Household Asset Ownership (%)",
                 color="Ownership %",color_continuous_scale="Viridis")
             fig.update_layout(**LY,height=max(len(adf)*30+100,350),showlegend=False,xaxis=dict(showgrid=True,gridcolor="#f1f5f9"),yaxis=dict(showgrid=False))
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
             # Asset score
             sec("Wealth Index (Asset Score)")
             hh["_asset_score"] = hh[asset_cols].apply(lambda r: (r.astype(str).str.strip()=="Yes").sum(), axis=1)
             fig2=px.histogram(hh,x="_asset_score",nbins=15,title="Distribution of Asset Score (count of Yes)",color_discrete_sequence=["#10b981"])
             fig2.update_layout(**LY,height=300,xaxis=dict(showgrid=False,title="Asset Score"),yaxis=dict(gridcolor="#f1f5f9",title="Households"))
-            st.plotly_chart(fig2)
+            st.plotly_chart(fig2,use_container_width=True)
 
 # ═══ TAB 2: ORAL HYGIENE ═══
 with tabs[2]:
     sec("Oral Hygiene Behaviours")
     o1,o2 = st.columns(2)
     if col_cleaning:
-        with o1: st.plotly_chart(pie(df[col_cleaning].dropna(),"Teeth Cleaning Method"))
+        with o1: st.plotly_chart(pie(df[col_cleaning].dropna(),"Teeth Cleaning Method"),use_container_width=True)
     if col_brush_freq:
-        with o2: st.plotly_chart(pie(df[col_brush_freq].dropna(),"Brushing Frequency"))
+        with o2: st.plotly_chart(pie(df[col_brush_freq].dropna(),"Brushing Frequency"),use_container_width=True)
     o3,o4 = st.columns(2)
     if col_toothpaste:
-        with o3: st.plotly_chart(pie(df[col_toothpaste].dropna(),"Toothpaste Type"))
+        with o3: st.plotly_chart(pie(df[col_toothpaste].dropna(),"Toothpaste Type"),use_container_width=True)
     if col_sugar:
-        with o4: st.plotly_chart(pie(df[col_sugar].dropna(),"Sugar Consumption Frequency"))
+        with o4: st.plotly_chart(pie(df[col_sugar].dropna(),"Sugar Consumption Frequency"),use_container_width=True)
     # Cleaning material (checkbox cols)
     clean_mat_cols = [c for c in raw.columns if "material did you use to clean" in c.lower()]
     if clean_mat_cols:
@@ -367,12 +367,12 @@ with tabs[2]:
         mdf = pd.DataFrame(mat_data).sort_values("Usage %",ascending=True)
         fig=px.bar(mdf,x="Usage %",y="Material",orientation="h",title="Cleaning Material Usage (%)",color_discrete_sequence=["#8b5cf6"])
         fig.update_layout(**LY,height=250,xaxis=dict(showgrid=True,gridcolor="#f1f5f9"),yaxis=dict(showgrid=False))
-        st.plotly_chart(fig)
+        st.plotly_chart(fig,use_container_width=True)
     # Tobacco
     sec("Tobacco & Alcohol Use")
     t1,t2 = st.columns(2)
     if col_tobacco:
-        with t1: st.plotly_chart(pie(df[col_tobacco].dropna(),"Current Tobacco Use"))
+        with t1: st.plotly_chart(pie(df[col_tobacco].dropna(),"Current Tobacco Use"),use_container_width=True)
         if col_ag:
             with t2:
                 tob_ag = df.dropna(subset=[col_tobacco,col_ag])
@@ -380,11 +380,11 @@ with tabs[2]:
                 if "Yes" in tob_ct.columns:
                     fig=px.bar(tob_ct.reset_index(),x=col_ag,y="Yes",title="Tobacco Use % by Age Group",color_discrete_sequence=["#ef4444"])
                     fig.update_layout(**LY,height=320,xaxis=dict(showgrid=False),yaxis=dict(gridcolor="#f1f5f9",title="% Using Tobacco"))
-                    st.plotly_chart(fig)
+                    st.plotly_chart(fig,use_container_width=True)
     if col_alcohol:
         sec("Alcohol Consumption")
         a1,a2 = st.columns(2)
-        with a1: st.plotly_chart(pie(df[col_alcohol].dropna(),"Current Alcohol Use"))
+        with a1: st.plotly_chart(pie(df[col_alcohol].dropna(),"Current Alcohol Use"),use_container_width=True)
         if col_ag:
             with a2:
                 alc_ag = df.dropna(subset=[col_alcohol,col_ag])
@@ -392,22 +392,22 @@ with tabs[2]:
                 if "Yes" in alc_ct.columns:
                     fig=px.bar(alc_ct.reset_index(),x=col_ag,y="Yes",title="Alcohol Use % by Age Group",color_discrete_sequence=["#f59e0b"])
                     fig.update_layout(**LY,height=320,xaxis=dict(showgrid=False),yaxis=dict(gridcolor="#f1f5f9",title="% Using Alcohol"))
-                    st.plotly_chart(fig)
+                    st.plotly_chart(fig,use_container_width=True)
     # Cross: hygiene by gender
     if col_cleaning and col_gender:
         sec("Cleaning Method by Gender")
-        st.plotly_chart(grp_bar(df.dropna(subset=[col_cleaning,col_gender]),col_cleaning,col_gender,"Cleaning Method × Gender"))
+        st.plotly_chart(grp_bar(df.dropna(subset=[col_cleaning,col_gender]),col_cleaning,col_gender,"Cleaning Method × Gender"),use_container_width=True)
 
 # ═══ TAB 3: DENTAL SERVICES ═══
 with tabs[3]:
     sec("Dental Pain & Service Utilisation")
     d1,d2,d3 = st.columns(3)
     if col_pain:
-        with d1: st.plotly_chart(pie(df[col_pain].dropna(),"Oral Pain (Last 6 Months)"))
+        with d1: st.plotly_chart(pie(df[col_pain].dropna(),"Oral Pain (Last 6 Months)"),use_container_width=True)
     if col_dentist:
-        with d2: st.plotly_chart(pie(df[col_dentist].dropna(),"Ever Visited Dentist"))
+        with d2: st.plotly_chart(pie(df[col_dentist].dropna(),"Ever Visited Dentist"),use_container_width=True)
     if col_perception:
-        with d3: st.plotly_chart(pie(df[col_perception].dropna(),"Self-Perception of Oral Health"))
+        with d3: st.plotly_chart(pie(df[col_perception].dropna(),"Self-Perception of Oral Health"),use_container_width=True)
     # Visit reasons
     visit_reason_cols = [c for c in raw.columns if "main reason for your last dental visit" in c.lower()]
     if visit_reason_cols:
@@ -420,7 +420,7 @@ with tabs[3]:
         vdf = pd.DataFrame(vr_data).sort_values("Prevalence %",ascending=True)
         fig=px.bar(vdf,x="Prevalence %",y="Reason",orientation="h",title="Reasons for Dental Visit",color_discrete_sequence=["#10b981"])
         fig.update_layout(**LY,height=max(len(vdf)*28+80,300),xaxis=dict(showgrid=True,gridcolor="#f1f5f9"),yaxis=dict(showgrid=False))
-        st.plotly_chart(fig)
+        st.plotly_chart(fig,use_container_width=True)
     # Not visiting reasons
     no_visit_cols = [c for c in raw.columns if "main reason for not visiting" in c.lower()]
     if no_visit_cols:
@@ -433,11 +433,11 @@ with tabs[3]:
         ndf = pd.DataFrame(nv_data).sort_values("Prevalence %",ascending=True)
         fig=px.bar(ndf,x="Prevalence %",y="Barrier",orientation="h",title="Barriers to Visiting Dentist",color_discrete_sequence=["#ef4444"])
         fig.update_layout(**LY,height=max(len(ndf)*28+80,300),xaxis=dict(showgrid=True,gridcolor="#f1f5f9"),yaxis=dict(showgrid=False))
-        st.plotly_chart(fig)
+        st.plotly_chart(fig,use_container_width=True)
     # Where treatment
     if col_where:
         sec("Treatment Facility Type")
-        st.plotly_chart(pie(df[col_where].dropna(),"Where Treatment Was Sought"))
+        st.plotly_chart(pie(df[col_where].dropna(),"Where Treatment Was Sought"),use_container_width=True)
     # Money spent
     if col_money:
         sec("Dental Expenditure")
@@ -448,11 +448,11 @@ with tabs[3]:
             with m1:
                 fig=px.histogram(money_valid,nbins=20,title="Distribution of Dental Expenditure (₹)",color_discrete_sequence=["#3b82f6"])
                 fig.update_layout(**LY,height=300,xaxis=dict(showgrid=False,title="Amount (₹)"),yaxis=dict(gridcolor="#f1f5f9",title="Count"))
-                st.plotly_chart(fig)
+                st.plotly_chart(fig,use_container_width=True)
             with m2:
                 fig=px.box(df.dropna(subset=["_money"]),y="_money",title="Expenditure Box Plot",color_discrete_sequence=["#10b981"])
                 fig.update_layout(**LY,height=300,yaxis=dict(gridcolor="#f1f5f9",title="Amount (₹)"))
-                st.plotly_chart(fig)
+                st.plotly_chart(fig,use_container_width=True)
             st.markdown(f"**Mean:** ₹{money_valid.mean():.0f} | **Median:** ₹{money_valid.median():.0f} | **Max:** ₹{money_valid.max():.0f}")
 
 # ═══ TAB 4: CARIES / DMFT ═══
@@ -483,17 +483,17 @@ with tabs[4]:
             fig.update_layout(**LY,barmode="stack",height=360,title="Mean DMFT Components by Age Group",
                 xaxis=dict(showgrid=False,title="Age Group"),yaxis=dict(gridcolor="#f1f5f9",title="Mean Count"),
                 legend=dict(orientation="h",yanchor="bottom",y=1.02))
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
         # DMFT by gender
         if col_gender:
             sec("DMFT by Gender")
             dmft_gen = df.groupby(col_gender)[["_D","_M","_F","_DMFT"]].mean().round(2).reset_index()
-            st.dataframe(dmft_gen.rename(columns={"_D":"Decayed","_M":"Missing","_F":"Filled","_DMFT":"Total DMFT"}),hide_index=True)
+            st.dataframe(dmft_gen.rename(columns={"_D":"Decayed","_M":"Missing","_F":"Filled","_DMFT":"Total DMFT"}),use_container_width=True,hide_index=True)
         # DMFT distribution
         sec("DMFT Score Distribution")
         fig=px.histogram(df,x="_DMFT",nbins=max(int(df["_DMFT"].max())+1,10),title="DMFT Score Distribution",color_discrete_sequence=["#8b5cf6"])
         fig.update_layout(**LY,height=300,xaxis=dict(showgrid=False,title="DMFT Score"),yaxis=dict(gridcolor="#f1f5f9",title="Count"))
-        st.plotly_chart(fig)
+        st.plotly_chart(fig,use_container_width=True)
         # Caries prevalence
         sec("Caries Prevalence (% with D>0)")
         caries_pct = (df["_D"]>0).mean()*100
@@ -503,7 +503,7 @@ with tabs[4]:
             cprev.columns = [col_ag,"Caries Prevalence %"]
             fig=px.bar(cprev,x=col_ag,y="Caries Prevalence %",title="Caries Prevalence by Age Group",color_discrete_sequence=["#ef4444"])
             fig.update_layout(**LY,height=300,xaxis=dict(showgrid=False),yaxis=dict(gridcolor="#f1f5f9"))
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
         # Tooth-level caries heatmap
         sec("Tooth-Level Caries Prevalence")
         tooth_caries = {}
@@ -519,7 +519,7 @@ with tabs[4]:
             tc_df = pd.DataFrame([tooth_caries])
             fig=px.imshow(tc_df,text_auto=True,aspect="auto",color_continuous_scale="YlOrRd",title="Caries % by Tooth (Permanent)")
             fig.update_layout(**LY,height=150)
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
     else:
         st.warning("No permanent tooth status columns found.")
 
@@ -544,7 +544,7 @@ with tabs[5]:
             bd = pd.DataFrame([bleed_data])
             fig=px.imshow(bd,text_auto=True,aspect="auto",color_continuous_scale="YlOrRd",title="Bleeding % by Tooth (Permanent)")
             fig.update_layout(**LY,height=150)
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
         # Overall bleeding prevalence
         any_bleed = df[bleed_cols].apply(lambda r: (r.astype(str).str.strip()=="Bleeding").any(),axis=1)
         st.markdown(f"**Any bleeding prevalence: {any_bleed.mean()*100:.1f}%** of participants")
@@ -556,7 +556,7 @@ with tabs[5]:
         pocket_all = df[pocket_cols].melt(value_name="Pocket")
         pocket_all = pocket_all[pocket_all["Pocket"].astype(str).str.strip().isin(["No pocket","Pocket of 4-5 mm","Pocket 6 mm or more"])]
         if len(pocket_all)>0:
-            st.plotly_chart(pie(pocket_all["Pocket"],"Pocket Depth Distribution"))
+            st.plotly_chart(pie(pocket_all["Pocket"],"Pocket Depth Distribution"),use_container_width=True)
         any_pocket = df[pocket_cols].apply(lambda r: r.astype(str).str.strip().isin(["Pocket of 4-5 mm","Pocket 6 mm or more"]).any(),axis=1)
         st.markdown(f"**Any pocketing (≥4mm) prevalence: {any_pocket.mean()*100:.1f}%**")
     # LOA
@@ -570,37 +570,37 @@ with tabs[5]:
         loa_all = loa_all[loa_all["LOA"].astype(str).str.strip()!=""]
         loa_all = loa_all[~loa_all["LOA"].astype(str).str.strip().isin(["nan",""])]
         if len(loa_all)>0:
-            st.plotly_chart(bar(loa_all["LOA"],"Loss of Attachment Distribution","h","#ef4444"))
+            st.plotly_chart(bar(loa_all["LOA"],"Loss of Attachment Distribution","h","#ef4444"),use_container_width=True)
 
 # ═══ TAB 6: DENTAL CONDITIONS ═══
 with tabs[6]:
     sec("Dental Conditions")
     c1,c2 = st.columns(2)
     if col_fluorosis:
-        with c1: st.plotly_chart(pie(df[col_fluorosis].dropna(),"Enamel Fluorosis Severity"))
+        with c1: st.plotly_chart(pie(df[col_fluorosis].dropna(),"Enamel Fluorosis Severity"),use_container_width=True)
     if col_erosion:
-        with c2: st.plotly_chart(pie(df[col_erosion].dropna(),"Dental Erosion Severity"))
+        with c2: st.plotly_chart(pie(df[col_erosion].dropna(),"Dental Erosion Severity"),use_container_width=True)
     c3,c4 = st.columns(2)
     if col_abrasion:
-        with c3: st.plotly_chart(pie(df[col_abrasion].dropna(),"Dental Abrasion"))
+        with c3: st.plotly_chart(pie(df[col_abrasion].dropna(),"Dental Abrasion"),use_container_width=True)
     if col_attrition:
-        with c4: st.plotly_chart(pie(df[col_attrition].dropna(),"Dental Attrition"))
+        with c4: st.plotly_chart(pie(df[col_attrition].dropna(),"Dental Attrition"),use_container_width=True)
     if col_trauma:
         sec("Dental Trauma")
-        st.plotly_chart(pie(df[col_trauma].dropna(),"Dental Trauma Type"))
+        st.plotly_chart(pie(df[col_trauma].dropna(),"Dental Trauma Type"),use_container_width=True)
     # Fluorosis by age group
     if col_fluorosis and col_ag:
         sec("Fluorosis by Age Group")
-        st.plotly_chart(grp_bar(df.dropna(subset=[col_fluorosis,col_ag]),col_ag,col_fluorosis,"Fluorosis Severity × Age Group"))
+        st.plotly_chart(grp_bar(df.dropna(subset=[col_fluorosis,col_ag]),col_ag,col_fluorosis,"Fluorosis Severity × Age Group"),use_container_width=True)
     # Edentulous
     if col_edentulous:
         sec("Edentulous Status (65-74)")
-        st.plotly_chart(pie(df[col_edentulous].dropna(),"Edentulous Status"))
+        st.plotly_chart(pie(df[col_edentulous].dropna(),"Edentulous Status"),use_container_width=True)
     # DMH for 4-6
     dmh_col = find_col(["Deciduous Molar Hypomineralization","DMH"],raw.columns)
     if dmh_col and dmh_col in df.columns:
         sec("Deciduous Molar Hypomineralization (4-6 yrs)")
-        st.plotly_chart(pie(df[dmh_col].dropna(),"DMH Status"))
+        st.plotly_chart(pie(df[dmh_col].dropna(),"DMH Status"),use_container_width=True)
 
 # ═══ TAB 7: TMJ & ORTHO ═══
 with tabs[7]:
@@ -615,16 +615,16 @@ with tabs[7]:
         tdf = pd.DataFrame(tmj_data).sort_values("Prevalence %",ascending=True)
         fig=px.bar(tdf,x="Prevalence %",y="Finding",orientation="h",title="TMJ Findings Prevalence",color_discrete_sequence=["#ef4444"])
         fig.update_layout(**LY,height=250,xaxis=dict(showgrid=True,gridcolor="#f1f5f9"),yaxis=dict(showgrid=False))
-        st.plotly_chart(fig)
+        st.plotly_chart(fig,use_container_width=True)
     sec("Dentofacial Anomalies")
     d1,d2 = st.columns(2)
     if col_crowding:
-        with d1: st.plotly_chart(pie(df[col_crowding].dropna(),"Crowding Distribution"))
+        with d1: st.plotly_chart(pie(df[col_crowding].dropna(),"Crowding Distribution"),use_container_width=True)
     if col_spacing:
-        with d2: st.plotly_chart(pie(df[col_spacing].dropna(),"Spacing Distribution"))
+        with d2: st.plotly_chart(pie(df[col_spacing].dropna(),"Spacing Distribution"),use_container_width=True)
     if col_molar:
         sec("Molar Relation")
-        st.plotly_chart(pie(df[col_molar].dropna(),"Antero-posterior Molar Relation"))
+        st.plotly_chart(pie(df[col_molar].dropna(),"Antero-posterior Molar Relation"),use_container_width=True)
     if col_overjet_max:
         sec("Overjet Distribution")
         df["_overjet"] = pd.to_numeric(df[col_overjet_max],errors="coerce")
@@ -632,13 +632,13 @@ with tabs[7]:
         if len(oj)>0:
             fig=px.histogram(oj,nbins=15,title="Maxillary Overjet Distribution (mm)",color_discrete_sequence=["#06b6d4"])
             fig.update_layout(**LY,height=280,xaxis=dict(showgrid=False,title="mm"),yaxis=dict(gridcolor="#f1f5f9"))
-            st.plotly_chart(fig)
+            st.plotly_chart(fig,use_container_width=True)
 
 # ═══ TAB 8: LESIONS & PROSTHETICS ═══
 with tabs[8]:
     sec("Oral Mucosal Lesions")
     if col_lesion:
-        st.plotly_chart(pie(df[col_lesion].dropna(),"Oral Mucosal Lesion Present?"))
+        st.plotly_chart(pie(df[col_lesion].dropna(),"Oral Mucosal Lesion Present?"),use_container_width=True)
     # Lesion types
     lesion_types = {"Oral Cancer":"Malignant tumor","Leukoplakia":"Leukoplakia","Lichen Planus":"Lichen planus",
         "Ulceration":"Ulceration","ANUG":"ANUG","Candidiasis":"Candidiasis","Abscess":"Abscess"}
@@ -651,26 +651,26 @@ with tabs[8]:
                 st.markdown(f"- **{lname}**: {pct:.1f}% prevalence")
     sec("Prosthetic Status")
     if col_prosthetic:
-        st.plotly_chart(pie(df[col_prosthetic].dropna(),"Has Prosthesis?"))
+        st.plotly_chart(pie(df[col_prosthetic].dropna(),"Has Prosthesis?"),use_container_width=True)
     up_col = find_col(["Upper Prosthetic","upper_prosthetic"],raw.columns)
     lp_col = find_col(["Lower Prosthetic","lower_prosthetic"],raw.columns)
     p1,p2 = st.columns(2)
     if up_col and up_col in df.columns:
-        with p1: st.plotly_chart(pie(df[up_col].dropna(),"Upper Prosthetic Status"))
+        with p1: st.plotly_chart(pie(df[up_col].dropna(),"Upper Prosthetic Status"),use_container_width=True)
     if lp_col and lp_col in df.columns:
-        with p2: st.plotly_chart(pie(df[lp_col].dropna(),"Lower Prosthetic Status"))
+        with p2: st.plotly_chart(pie(df[lp_col].dropna(),"Lower Prosthetic Status"),use_container_width=True)
 
 # ═══ TAB 9: TREATMENT NEEDS ═══
 with tabs[9]:
     sec("Intervention Urgency")
     if col_intervention:
-        st.plotly_chart(pie(df[col_intervention].dropna(),"Intervention Urgency Distribution",380))
+        st.plotly_chart(pie(df[col_intervention].dropna(),"Intervention Urgency Distribution",380),use_container_width=True)
         if col_ag:
             sec("Urgency by Age Group")
-            st.plotly_chart(grp_bar(df.dropna(subset=[col_intervention,col_ag]),col_ag,col_intervention,"Intervention Urgency × Age Group",400))
+            st.plotly_chart(grp_bar(df.dropna(subset=[col_intervention,col_ag]),col_ag,col_intervention,"Intervention Urgency × Age Group",400),use_container_width=True)
         if col_gender:
             sec("Urgency by Gender")
-            st.plotly_chart(grp_bar(df.dropna(subset=[col_intervention,col_gender]),col_gender,col_intervention,"Intervention Urgency × Gender",360))
+            st.plotly_chart(grp_bar(df.dropna(subset=[col_intervention,col_gender]),col_gender,col_intervention,"Intervention Urgency × Gender",360),use_container_width=True)
     # Cross-analysis summary
     sec("Clinical Summary Table")
     summary_items = []
@@ -689,10 +689,10 @@ with tabs[9]:
     if col_lesion:
         summary_items.append({"Indicator":"Oral Lesion","Value":f"{(df[col_lesion]=='Yes').mean()*100:.1f}%"})
     if summary_items:
-        st.dataframe(pd.DataFrame(summary_items),hide_index=True)
+        st.dataframe(pd.DataFrame(summary_items),use_container_width=True,hide_index=True)
     if col_ind_status:
         sec("Individual Status")
-        st.plotly_chart(pie(df[col_ind_status].dropna(),"Individual Completion Status"))
+        st.plotly_chart(pie(df[col_ind_status].dropna(),"Individual Completion Status"),use_container_width=True)
 
 # ═══ TAB 10: EXAMINER ANALYSIS ═══
 with tabs[10]:
@@ -713,7 +713,7 @@ with tabs[10]:
             )
         with sel_col2:
             st.markdown("<br>",unsafe_allow_html=True)
-            if st.button("Select All", key="exam_sel_all"):
+            if st.button("Select All", key="exam_sel_all", use_container_width=True):
                 st.session_state["exam_tab_selector"] = list(all_examiners)
                 st.rerun()
         st.markdown('</div>',unsafe_allow_html=True)
@@ -754,7 +754,7 @@ with tabs[10]:
                     row_data["Urgent"] = int(urgent)
                 exam_summary_rows.append(row_data)
             exam_sum = pd.DataFrame(exam_summary_rows)
-            st.dataframe(exam_sum, hide_index=True)
+            st.dataframe(exam_sum, use_container_width=True, hide_index=True)
 
             # ── KPIs ──
             if len(exam_sum)>0:
@@ -777,12 +777,12 @@ with tabs[10]:
             # ── GENDER DISTRIBUTION ──
             if col_gender:
                 sec("Gender Distribution per Examiner")
-                st.plotly_chart(grp_bar(edf.dropna(subset=[col_exam,col_gender]),col_exam,col_gender,"Examiner × Gender"))
+                st.plotly_chart(grp_bar(edf.dropna(subset=[col_exam,col_gender]),col_exam,col_gender,"Examiner × Gender"),use_container_width=True)
 
             # ── AGE GROUP DISTRIBUTION ──
             if col_ag:
                 sec("Age Group Distribution per Examiner")
-                st.plotly_chart(grp_bar(edf.dropna(subset=[col_exam,col_ag]),col_exam,col_ag,"Examiner × Age Group"))
+                st.plotly_chart(grp_bar(edf.dropna(subset=[col_exam,col_ag]),col_exam,col_ag,"Examiner × Age Group"),use_container_width=True)
 
             # ── DAILY PRODUCTIVITY ──
             if has_date:
@@ -793,7 +793,7 @@ with tabs[10]:
                     title="Daily Patients per Examiner",color_discrete_sequence=C,markers=True)
                 fig_line.update_layout(**LY,height=350,xaxis=dict(showgrid=False),
                     yaxis=dict(gridcolor="#f1f5f9"),legend=dict(orientation="h",yanchor="bottom",y=1.02))
-                st.plotly_chart(fig_line)
+                st.plotly_chart(fig_line,use_container_width=True)
 
                 sec("Productivity Distribution")
                 prod = edf.dropna(subset=["_date",col_exam]).groupby([edf["_date"].dt.date,col_exam]).size().reset_index()
@@ -802,7 +802,7 @@ with tabs[10]:
                     title="Distribution of Daily Patient Count per Examiner",color_discrete_sequence=C)
                 fig_box.update_layout(**LY,height=350,showlegend=False,
                     xaxis=dict(showgrid=False),yaxis=dict(gridcolor="#f1f5f9",title="Patients/Day"))
-                st.plotly_chart(fig_box)
+                st.plotly_chart(fig_box,use_container_width=True)
 
             # ── INDIVIDUAL EXAMINER DETAIL CARDS ──
             sec("📋 Individual Examiner Details")
@@ -823,19 +823,19 @@ with tabs[10]:
                     if col_ag:
                         age_cts = ex_df[col_ag].value_counts().reset_index()
                         age_cts.columns = ["Age Group","Count"]
-                        st.dataframe(age_cts, hide_index=True)
+                        st.dataframe(age_cts, use_container_width=True, hide_index=True)
 
                     # Cluster breakdown for this examiner
                     if col_cluster:
                         cl_cts = ex_df[col_cluster].value_counts().reset_index()
                         cl_cts.columns = ["Cluster","Count"]
-                        st.dataframe(cl_cts, hide_index=True)
+                        st.dataframe(cl_cts, use_container_width=True, hide_index=True)
 
                     # Intervention urgency for this examiner
                     if col_intervention:
                         urg_cts = ex_df[col_intervention].dropna().value_counts().reset_index()
                         urg_cts.columns = ["Urgency","Count"]
-                        st.dataframe(urg_cts, hide_index=True)
+                        st.dataframe(urg_cts, use_container_width=True, hide_index=True)
 
                     # Date range
                     if has_date:
@@ -869,9 +869,9 @@ with tabs[10]:
                     rr["Urgent Cases"] = int(urgent)
                 report_rows.append(rr)
             report_df = pd.DataFrame(report_rows)
-            st.dataframe(report_df, hide_index=True)
+            st.dataframe(report_df, use_container_width=True, hide_index=True)
             csv_report = report_df.to_csv(index=False).encode("utf-8")
-            st.download_button("📥 Download Examiner Report CSV",csv_report,"examiner_report.csv","text/csv")
+            st.download_button("📥 Download Examiner Report CSV",csv_report,"examiner_report.csv","text/csv",use_container_width=True)
     else:
         st.warning("No Examiner column found in the data.")
 
@@ -906,7 +906,7 @@ with tabs[11]:
                 row_data["Urgent Cases"] = int(urgent)
             cl_summary_rows.append(row_data)
         cl_sum = pd.DataFrame(cl_summary_rows)
-        st.dataframe(cl_sum, hide_index=True)
+        st.dataframe(cl_sum, use_container_width=True, hide_index=True)
 
         # KPIs
         if len(cl_sum)>0:
@@ -925,17 +925,17 @@ with tabs[11]:
 
         # Participants per cluster
         sec("Participants per Cluster")
-        st.plotly_chart(bar(df[col_cluster].dropna(),"Participants per Cluster","h","#06b6d4"))
+        st.plotly_chart(bar(df[col_cluster].dropna(),"Participants per Cluster","h","#06b6d4"),use_container_width=True)
 
         # Gender distribution per cluster
         if col_gender:
             sec("Gender Distribution per Cluster")
-            st.plotly_chart(grp_bar(df.dropna(subset=[col_cluster,col_gender]),col_cluster,col_gender,"Cluster × Gender"))
+            st.plotly_chart(grp_bar(df.dropna(subset=[col_cluster,col_gender]),col_cluster,col_gender,"Cluster × Gender"),use_container_width=True)
 
         # Age group distribution per cluster
         if col_ag:
             sec("Age Group Distribution per Cluster")
-            st.plotly_chart(grp_bar(df.dropna(subset=[col_cluster,col_ag]),col_cluster,col_ag,"Cluster × Age Group"))
+            st.plotly_chart(grp_bar(df.dropna(subset=[col_cluster,col_ag]),col_cluster,col_ag,"Cluster × Age Group"),use_container_width=True)
 
         # DMFT by cluster
         if "_DMFT" in df.columns:
@@ -949,12 +949,12 @@ with tabs[11]:
             fig_dmft.update_layout(**LY,barmode="stack",height=380,title="Mean DMFT Components by Cluster",
                 xaxis=dict(showgrid=False,title="Cluster"),yaxis=dict(gridcolor="#f1f5f9",title="Mean Score"),
                 legend=dict(orientation="h",yanchor="bottom",y=1.02))
-            st.plotly_chart(fig_dmft)
+            st.plotly_chart(fig_dmft,use_container_width=True)
 
         # Intervention urgency by cluster
         if col_intervention:
             sec("Treatment Urgency by Cluster")
-            st.plotly_chart(grp_bar(df.dropna(subset=[col_cluster,col_intervention]),col_cluster,col_intervention,"Cluster × Intervention Urgency",400))
+            st.plotly_chart(grp_bar(df.dropna(subset=[col_cluster,col_intervention]),col_cluster,col_intervention,"Cluster × Intervention Urgency",400),use_container_width=True)
 
         # Daily enrolment per cluster (if dates available)
         if has_date:
@@ -965,7 +965,7 @@ with tabs[11]:
                 title="Daily Enrolment per Cluster",color_discrete_sequence=C,markers=True)
             fig_tl.update_layout(**LY,height=350,xaxis=dict(showgrid=False),
                 yaxis=dict(gridcolor="#f1f5f9"),legend=dict(orientation="h",yanchor="bottom",y=1.02))
-            st.plotly_chart(fig_tl)
+            st.plotly_chart(fig_tl,use_container_width=True)
 
         # Examiner × Cluster cross-tabulation
         if col_exam:
@@ -974,11 +974,11 @@ with tabs[11]:
             ct_ex_cl.index.name = "Cluster"
             ct_ex_cl.columns = [f"Examiner {c}" if c != "Total" else c for c in ct_ex_cl.columns]
             ct_ex_cl = ct_ex_cl.reset_index()
-            st.dataframe(ct_ex_cl, hide_index=True)
+            st.dataframe(ct_ex_cl, use_container_width=True, hide_index=True)
 
             # Grouped bar: Examiner counts in each cluster
             fig_ex_cl = grp_bar(df.dropna(subset=[col_cluster, col_exam]), col_cluster, col_exam, "Patients per Examiner in Each Cluster", 400)
-            st.plotly_chart(fig_ex_cl)
+            st.plotly_chart(fig_ex_cl, use_container_width=True)
 
             # Detailed per-cluster examiner breakdown
             sec("Detailed Cluster × Examiner Breakdown")
@@ -989,7 +989,8 @@ with tabs[11]:
                 with st.expander(f"📁 Cluster: {cl}  ({len(cl_df)} participants)", expanded=False):
                     ex_breakdown = cl_df.groupby(col_exam).agg(
                         Patients=(col_id, "count"),
-                        **({col_gender: (col_gender, lambda x: dict(x.value_counts()))} if col_gender else {})).reset_index()
+                        **({col_gender: (col_gender, lambda x: dict(x.value_counts()))} if col_gender else {}),
+                    ).reset_index()
                     ex_breakdown.columns = ["Examiner"] + list(ex_breakdown.columns[1:])
                     # Simpler approach: build rows manually
                     rows = []
@@ -1006,13 +1007,13 @@ with tabs[11]:
                             r["Mean DMFT"] = round(ex_sub["_DMFT"].mean(), 2) if len(ex_sub)>0 else 0
                         rows.append(r)
                     if rows:
-                        st.dataframe(pd.DataFrame(rows), hide_index=True)
+                        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
         # Downloadable cluster report
         sec("📥 Download Cluster Report")
-        st.dataframe(cl_sum, hide_index=True)
+        st.dataframe(cl_sum, use_container_width=True, hide_index=True)
         csv_cl = cl_sum.to_csv(index=False).encode("utf-8")
-        st.download_button("📥 Download Cluster Report CSV",csv_cl,"cluster_report.csv","text/csv")
+        st.download_button("📥 Download Cluster Report CSV",csv_cl,"cluster_report.csv","text/csv",use_container_width=True)
     else:
         st.warning("No Cluster column found in the data.")
 
@@ -1020,9 +1021,9 @@ with tabs[11]:
 with tabs[12]:
     sec("Raw Data Explorer")
     st.markdown(f"**{len(df)} rows × {len(df.columns)} columns** (filtered)")
-    st.dataframe(df.drop(columns=[c for c in df.columns if c.startswith("_")],errors="ignore"),height=500)
+    st.dataframe(df.drop(columns=[c for c in df.columns if c.startswith("_")],errors="ignore"),use_container_width=True,height=500)
     csv = df.drop(columns=[c for c in df.columns if c.startswith("_")],errors="ignore").to_csv(index=False).encode("utf-8")
-    st.download_button("📥 Download Filtered Data",csv,"filtered_data.csv","text/csv")
+    st.download_button("📥 Download Filtered Data",csv,"filtered_data.csv","text/csv",use_container_width=True)
     sec("Column Summary")
     col_info = pd.DataFrame({
         "Column":raw.columns,
@@ -1031,4 +1032,4 @@ with tabs[12]:
         "Dtype":raw.dtypes.astype(str).values,
         "Unique":raw.nunique().values
     })
-    st.dataframe(col_info,hide_index=True,height=400)
+    st.dataframe(col_info,use_container_width=True,hide_index=True,height=400)

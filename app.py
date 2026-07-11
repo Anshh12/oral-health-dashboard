@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
 from datetime import datetime
+from io import BytesIO
 
 # ── PAGE CONFIG ──
 st.set_page_config(page_title="OralHealth Analytics Pro", page_icon="🦷", layout="wide", initial_sidebar_state="expanded")
@@ -82,8 +83,14 @@ if not uploaded:
 
 # ── LOAD DATA ──
 @st.cache_data
-def load(f): return pd.read_csv(f,low_memory=False)
-raw = load(uploaded)
+def load_csv(file_bytes):
+    return pd.read_csv(BytesIO(file_bytes),low_memory=False)
+
+try:
+    raw = load_csv(uploaded.getvalue())
+except Exception as exc:
+    st.error(f"Could not read the uploaded CSV: {exc}")
+    st.stop()
 
 # ── SEPARATE HOUSEHOLD vs PARTICIPANT ──
 ri_col = "Repeat Instrument"

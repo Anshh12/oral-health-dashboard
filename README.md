@@ -15,7 +15,7 @@ A comprehensive Streamlit dashboard for analyzing oral health survey data (WHO O
 
 ```bash
 pip install -r requirements.txt
-streamlit run "patient_dashboard (2).py"
+streamlit run app.py
 ```
 
 ## Data Format
